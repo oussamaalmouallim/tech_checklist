@@ -1,0 +1,64 @@
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checklist Technicien</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Add jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="language-switch">
+      <button onclick="switchLanguage('fr')" class="lang-btn" data-lang="fr">Français</button>
+      <button onclick="switchLanguage('ar')" class="lang-btn" data-lang="ar">العربية</button>
+    </div>
+
+    <h1 id="checklistTitle">Checklist pour le Technicien</h1>
+    
+    <div class="technician-switch">
+      <button onclick="switchTechnicianType('outgoing')" class="switch-btn" data-type="outgoing">
+        Technicien Sortant
+      </button>
+      <button onclick="switchTechnicianType('incoming')" class="switch-btn" data-type="incoming">
+        Technicien Entrant
+      </button>
+    </div>
+    
+    <div class="add-item">
+      <select id="sectionSelect">
+        <option value="">Choisir une section...</option>
+        <option value="1">1. Préparation</option>
+        <option value="2">2. Installation Physique</option>
+        <option value="3">3. Configuration Logicielle</option>
+        <option value="4">4. Tests</option>
+        <option value="5">5. Documentation</option>
+        <option value="6">6. Maintenance</option>
+        <option value="7">7. Validation</option>
+      </select>
+      <input type="text" id="newItem" placeholder="Ajouter un nouvel élément...">
+      <button onclick="addItem()">Ajouter</button>
+    </div>
+
+    <div class="categories">
+      <ul id="checklist"></ul>
+    </div>
+
+    <div class="controls">
+      <button onclick="clearCompleted()">Effacer Terminés</button>
+      <button onclick="clearAll()">Tout Effacer</button>
+      <button onclick="resetDefault()">Réinitialiser</button>
+      <button onclick="exportToPDF()" class="export-btn">Exporter en PDF</button>
+    </div>
+
+    <div class="signature-section">
+      <input type="text" id="techSignature" placeholder="Signature du technicien">
+      <button onclick="signChecklist()">Signer la checklist</button>
+      <p id="signatureDate"></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
