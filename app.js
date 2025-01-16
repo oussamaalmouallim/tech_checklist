@@ -450,6 +450,7 @@ function exportToPDF() {
   const margin = 20;
   const contentWidth = pageWidth - (2 * margin);
   const lineHeight = 8;
+  const paragraphSpacing = 4; // Adjust this value to change the space between paragraphs
   let yPosition = margin;
 
   // Add header with logo-like design
@@ -524,7 +525,9 @@ function exportToPDF() {
     }
 
     if (index < frenchItems.length - 1 && frenchItems[index + 1].isHeader) {
-      yPosition += lineHeight;
+      yPosition += lineHeight + paragraphSpacing;
+    } else {
+      yPosition += paragraphSpacing;
     }
   });
 
