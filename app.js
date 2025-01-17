@@ -450,7 +450,6 @@ function exportToPDF() {
   const margin = 20;
   const contentWidth = pageWidth - (2 * margin);
   const lineHeight = 8;
-  const paragraphSpacing = 4; // Adjust this value to change the space between paragraphs
   let yPosition = margin;
 
   // Add header with logo-like design
@@ -468,11 +467,32 @@ function exportToPDF() {
   const techType = currentType === 'outgoing' ? 'Technicien Sortant' : 'Technicien Entrant';
   const currentDate = new Date().toLocaleDateString('fr-FR');
   
+  yPosition = 55;
   doc.setFontSize(12);
-  doc.text(`Type: ${techType}`, margin, 55);
-  doc.text(`Date: ${currentDate}`, margin, 65);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Type: ${techType}`, margin, yPosition);
+  doc.text(`Date: ${currentDate}`, margin, yPosition + 10);
 
-  yPosition = 80;
+  yPosition += 20;
+
+  // Add signature if present (translate to French if in Arabic)
+  const signatureText = document.getElementById('signatureDate').textContent;
+  if (signatureText) {
+    doc.setDrawColor(52, 152, 219);
+    doc.rect(margin, yPosition, contentWidth, lineHeight * 3);
+    
+    // Convert Arabic signature text to French format if needed
+    let frenchSignatureText = signatureText;
+    if (currentLanguage === 'ar') {
+      const signature = signatureText.split(' ')[2]; // Extract signature name
+      const date = new Date().toLocaleString('fr-FR');
+      frenchSignatureText = `Signé par ${signature} le ${date}`;
+    }
+    
+    doc.setFont('helvetica', 'italic');
+    doc.text(frenchSignatureText, margin + 5, yPosition + lineHeight);
+    yPosition += lineHeight * 4;
+  }
 
   // Function to check if new page is needed
   function checkNewPage(height = lineHeight) {
@@ -525,32 +545,9 @@ function exportToPDF() {
     }
 
     if (index < frenchItems.length - 1 && frenchItems[index + 1].isHeader) {
-      yPosition += lineHeight + paragraphSpacing;
-    } else {
-      yPosition += paragraphSpacing;
+      yPosition += lineHeight;
     }
   });
-
-  // Add signature if present (translate to French if in Arabic)
-  const signatureText = document.getElementById('signatureDate').textContent;
-  if (signatureText) {
-    checkNewPage(lineHeight * 4);
-    yPosition += lineHeight * 2;
-    
-    doc.setDrawColor(52, 152, 219);
-    doc.rect(margin, yPosition - lineHeight, contentWidth, lineHeight * 3);
-    
-    // Convert Arabic signature text to French format if needed
-    let frenchSignatureText = signatureText;
-    if (currentLanguage === 'ar') {
-      const signature = signatureText.split(' ')[2]; // Extract signature name
-      const date = new Date().toLocaleString('fr-FR');
-      frenchSignatureText = `Signé par ${signature} le ${date}`;
-    }
-    
-    doc.setFont('helvetica', 'italic');
-    doc.text(frenchSignatureText, margin + 5, yPosition);
-  }
 
   // Add footer with page numbers in French
   const pageCount = doc.internal.getNumberOfPages();
