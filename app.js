@@ -280,7 +280,21 @@ function addItem() {
     return;
   }
   
-  // Find the position to insert the new item
+  // Create new item
+  const newItem = {
+    id: Date.now(),
+    text: `${selectedSection}. ${text}`,
+    completed: false,
+    isHeader: false,
+    isCustom: true
+  };
+  
+  // Store custom item
+  const customItems = JSON.parse(localStorage.getItem('custom-items') || '[]');
+  customItems.push(newItem);
+  localStorage.setItem('custom-items', JSON.stringify(customItems));
+  
+  // Add to current items
   const sectionHeader = items.find(item => 
     item.isHeader && item.text.startsWith(`${selectedSection}.`)
   );
@@ -293,21 +307,11 @@ function addItem() {
   const sectionIndex = items.indexOf(sectionHeader);
   let insertIndex = sectionIndex + 1;
   
-  // Find the end of the current section
-  for (let i = insertIndex; i < items.length; i++) {
-    if (items[i].isHeader) {
-      break;
-    }
-    insertIndex = i + 1;
+  while (insertIndex < items.length && !items[insertIndex].isHeader) {
+    insertIndex++;
   }
   
-  // Insert the new item at the correct position
-  items.splice(insertIndex, 0, {
-    id: Date.now(),
-    text,
-    completed: false,
-    isHeader: false
-  });
+  items.splice(insertIndex, 0, newItem);
   
   saveItems();
   renderItems();
@@ -360,6 +364,7 @@ function clearCompleted() {
 
 function clearAll() {
   localStorage.removeItem('completion-state');
+  localStorage.removeItem('custom-items');
   items = translations[currentLanguage][currentType].map(item => ({
     ...item,
     completed: false
@@ -370,6 +375,7 @@ function clearAll() {
 
 function resetDefault() {
   localStorage.removeItem('completion-state');
+  localStorage.removeItem('custom-items');
   items = [...translations[currentLanguage][currentType]];
   saveItems();
   renderItems();
@@ -417,14 +423,45 @@ function signChecklist() {
 }
 
 function exportToPDF() {
-  // Get completion state to ensure consistency
+  // Get completion state AND custom items to ensure consistency
   const completionState = JSON.parse(localStorage.getItem('completion-state') || '{}');
+  const customItems = JSON.parse(localStorage.getItem('custom-items') || '[]');
   
   // Use French items but with the current completion state
-  const frenchItems = translations['fr'][currentType].map(item => ({
+  let frenchItems = translations['fr'][currentType].map(item => ({
     ...item,
     completed: completionState[item.id] || false
   }));
+
+  // Add custom items in their respective sections
+  customItems.forEach(customItem => {
+    // Find the section where this item belongs
+    const sectionMatch = customItem.text.match(/^(\d+)\./);
+    if (sectionMatch) {
+      const sectionNumber = sectionMatch[1];
+      
+      // Find where to insert in frenchItems
+      const sectionHeader = frenchItems.find(item => 
+        item.isHeader && item.text.startsWith(`${sectionNumber}.`)
+      );
+      
+      if (sectionHeader) {
+        const sectionIndex = frenchItems.indexOf(sectionHeader);
+        let insertIndex = sectionIndex + 1;
+        
+        // Find the end of the current section
+        while (insertIndex < frenchItems.length && !frenchItems[insertIndex].isHeader) {
+          insertIndex++;
+        }
+        
+        // Insert the custom item
+        frenchItems.splice(insertIndex, 0, {
+          ...customItem,
+          completed: completionState[customItem.id] || false
+        });
+      }
+    }
+  });
 
   // Initialize jsPDF
   const { jsPDF } = window.jspdf;
